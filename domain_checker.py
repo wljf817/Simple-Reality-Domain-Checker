@@ -1080,23 +1080,39 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    domain = args.domain
-    interactive_input = False
-    if not domain:
-        try:
-            interactive_input = True
-            domain = input("请输入域名: ").strip()
-            print("")
-        except EOFError:
-            print("[错误] 未提供域名")
-            return 2
+    itdog_timeout = max(5, int(args.itdog_timeout))
 
-    return run_checks(
-        domain,
-        skip_itdog=args.skip_itdog,
-        itdog_timeout=max(5, int(args.itdog_timeout)),
-        show_input_domain=not interactive_input,
-    )
+    if args.domain:
+        return run_checks(
+            args.domain,
+            skip_itdog=args.skip_itdog,
+            itdog_timeout=itdog_timeout,
+            show_input_domain=True,
+        )
+
+    while True:
+        try:
+            domain = input("请输入域名（q/quit/exit 或空行退出）: ").strip()
+        except EOFError:
+            print("")
+            print("已退出")
+            return 0
+
+        if not domain:
+            print("已退出")
+            return 0
+        if domain.lower() in {"q", "quit", "exit"}:
+            print("已退出")
+            return 0
+
+        print("")
+        run_checks(
+            domain,
+            skip_itdog=args.skip_itdog,
+            itdog_timeout=itdog_timeout,
+            show_input_domain=False,
+        )
+        print("")
 
 
 if __name__ == "__main__":
